@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------------------------------------------------
-# Neural_Network_Classfor the training of geotechnical data
+# Neural_Network_Class for the training of geotechnical data
 # By Weijie Zhang, Hohai University
 # ----------------------------------------------------------------------------------------------------------------------
 import os
@@ -14,7 +14,7 @@ from Neural_Network_Class_Define import Neural_Network_Class
 # ----------------------------------------------------------------------------------------------------------------------
 # main program
 # define the running type： 1--train; 2--train and test; 3--load model state and predict new data
-run_type = 2
+run_type = 3
 # ----------------------------------------------------------------------------------------------------------------------
 # define the file path
 # training data file path

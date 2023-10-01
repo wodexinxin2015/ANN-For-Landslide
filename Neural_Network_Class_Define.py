@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------------------------------------------------
-# Neural_Network_Classfor the training of geotechnical data
+# Neural_Network_Class for the training of geotechnical data
 # By Weijie Zhang, Hohai University
 # ----------------------------------------------------------------------------------------------------------------------
 import torch

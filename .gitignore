@@ -1,0 +1,11 @@
+/predict/
+/test-data/
+/train-data/
+/0-model.pt
+/1-loss-process.txt
+/1-score-test-process.txt
+/1-score-train-process.txt
+/2-feat-max.pth
+/2-feat-min.pth
+/2-label-max.pth
+/2-label-min.pth
