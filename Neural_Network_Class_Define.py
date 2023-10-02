@@ -237,7 +237,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             temp_mean = np.array(mean_var)
             temp_std = np.array(std_var)
             mean_var_log = np.log(temp_mean * temp_mean / np.sqrt(temp_std + temp_mean * temp_mean))
-            std_var_log = np.sqrt(np.log(temp_std / temp_mean * temp_mean + 1))
+            std_var_log = np.sqrt(np.log(temp_std / temp_mean / temp_mean + 1))
             mean_var_1 = (np.full((mcs_times, 2), mean_var_log)).T
             std_var_1 = (np.full((mcs_times, 2), std_var_log)).T
         elif dis_type == 1:  # normal distribution

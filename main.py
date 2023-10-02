@@ -71,10 +71,10 @@ train_loop = 1000
 # ----------------------------------------------------------------------------------------------------------------------
 # define the mean, standard deviation and correlation coefficient for run-type == 4
 mean_var = [20, 10]
-std_var = [4, 2]
+std_var = [6, 3]
 coeff_var = -0.3
 mcs_times = 10000
-dis_type = 1  # 1--normal distribution; 2--log normal distribution
+dis_type = 2  # 1--normal distribution; 2--log normal distribution
 # ----------------------------------------------------------------------------------------------------------------------
 # setting font
 font_tnr_reg = plt_fm.FontProperties('Times New Roman', size=14, stretch=0)
