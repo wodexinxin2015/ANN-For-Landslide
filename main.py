@@ -14,7 +14,8 @@ from Neural_Network_Class_Define import Neural_Network_Class
 # ----------------------------------------------------------------------------------------------------------------------
 # main program
 # define the running type： 1--train; 2--train and test; 3--load model state and predict new data
-run_type = 3
+# 4--automatically generate the random parameters and perform the prediction.
+run_type = 4
 # ----------------------------------------------------------------------------------------------------------------------
 # define the file path
 # training data file path
@@ -67,6 +68,13 @@ batch_size = 4
 learn_r = 0.001
 # define the training cycle
 train_loop = 1000
+# ----------------------------------------------------------------------------------------------------------------------
+# define the mean, standard deviation and correlation coefficient for run-type == 4
+mean_var = [20, 10]
+std_var = [4, 2]
+coeff_var = -0.3
+mcs_times = 10000
+dis_type = 1  # 1--normal distribution; 2--log normal distribution
 # ----------------------------------------------------------------------------------------------------------------------
 # setting font
 font_tnr_reg = plt_fm.FontProperties('Times New Roman', size=14, stretch=0)
@@ -152,4 +160,9 @@ if run_type == 2:
 # define state loading and prediction function of Net_Model
 if run_type == 3:
     Net_Model.model_load_predict(pred_data_dir, pred_result_dir)
+# ----------------------------------------------------------------------------------------------------------------------
+# define the random parameter generation module and Monte-Carlo prediction
+if run_type == 4:
+    if dis_type == 1 or dis_type == 2:
+        Net_Model.random_para_predict(pred_result_dir, mean_var, std_var, coeff_var, mcs_times, dis_type)
 # ----------------------------------------------------------------------------------------------------------------------
