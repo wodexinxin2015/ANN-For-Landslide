@@ -71,7 +71,7 @@ train_loop = 1000
 # ----------------------------------------------------------------------------------------------------------------------
 # define the mean, standard deviation and correlation coefficient for run-type == 4
 mean_var = [20, 10]
-std_var = [6, 3]
+std_var = [8, 2]
 coeff_var = -0.3
 mcs_times = 10000
 dis_type = 2  # 1--normal distribution; 2--log normal distribution
