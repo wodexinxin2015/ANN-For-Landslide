@@ -15,7 +15,7 @@ from Neural_Network_Class_Define import Neural_Network_Class
 # main program
 # define the running type： 1--train; 2--train and test; 3--load model state and conduct incremental train;
 # 4--load model state and predict new data; 5--automatically generate the random parameters and perform the prediction.
-run_type = 3
+run_type = 2
 # ----------------------------------------------------------------------------------------------------------------------
 # define the file path
 # training data file path

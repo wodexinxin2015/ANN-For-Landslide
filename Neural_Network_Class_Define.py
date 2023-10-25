@@ -203,7 +203,8 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
 
     # define the incremental train process
     def training_testing_incremental(self, learn_r, bat_size, train_loop, optim_type, loss_type, train_num, test_num,
-                                    train_data_dir, test_data_dir, slice_num, feat_max, feat_min, label_max, label_min):
+                                     train_data_dir, test_data_dir, slice_num, feat_max, feat_min, label_max,
+                                     label_min):
         # load data and label from training file and testing file
         train_data_numpy = np.loadtxt(train_data_dir, dtype=np.float32, delimiter=',', skiprows=0)
         train_data_tensor = torch.from_numpy(train_data_numpy)
