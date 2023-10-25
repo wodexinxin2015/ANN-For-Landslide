@@ -13,9 +13,9 @@ from Neural_Network_Class_Define import Neural_Network_Class
 
 # ----------------------------------------------------------------------------------------------------------------------
 # main program
-# define the running type： 1--train; 2--train and test; 3--load model state and predict new data
-# 4--automatically generate the random parameters and perform the prediction.
-run_type = 4
+# define the running type： 1--train; 2--train and test; 3--load model state and conduct incremental train;
+# 4--load model state and predict new data; 5--automatically generate the random parameters and perform the prediction.
+run_type = 3
 # ----------------------------------------------------------------------------------------------------------------------
 # define the file path
 # training data file path
@@ -157,12 +157,68 @@ if run_type == 2:
     torch.save(label_max, '2-label-max.pth')
     torch.save(label_min, '2-label-min.pth')
 # ----------------------------------------------------------------------------------------------------------------------
-# define state loading and prediction function of Net_Model
+# define the module of loading model state and conducting the incremental training
+# testing the model with test data
 if run_type == 3:
+    # load the model state and the boundaries of features and labels: max, min.
+    Net_Model.load_state_dict(torch.load('0-model.pt'))
+    feat_max = torch.load('2-feat-max.pth')
+    feat_min = torch.load('2-feat-min.pth')
+    label_max = torch.load('2-label-max.pth')
+    label_min = torch.load('2-label-min.pth')
+    # incremental train process
+    loss_holder, simu_score_train, simu_score_test = \
+        Net_Model.training_testing_incremental(learn_r, batch_size, train_loop,
+                                               optim_type, loss_type,
+                                               train_data_num, test_data_num,
+                                               train_data_dir, test_data_dir,
+                                               slice_num, feat_max, feat_min, label_max, label_min)
+    # plot the relationship between loss_value and iteration step
+    fig = plt.figure()
+    loss_df = pd.DataFrame(loss_holder, columns=['step', 'loss'])
+    plt.plot(loss_df['loss'].values, 'ro', markersize=2)
+    plt.xticks(fontproperties=font_tnr_reg)
+    plt.yticks(fontproperties=font_tnr_reg)
+    plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
+    plt.ylabel('Loss', fontproperties=font_tnr_reg)
+    plt.show()
+    # plot the relationship between loss_value and iteration step
+    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-cos'])
+    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-cos'])
+
+    fig2 = plt.figure()
+    plt.plot(score_train_df['score-per'].values, 'g*', markersize=2)
+    plt.plot(score_test_df['score-per'].values, 'm*', markersize=2)
+    plt.xticks(fontproperties=font_tnr_reg)
+    plt.yticks(fontproperties=font_tnr_reg)
+    plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
+    plt.ylabel('Pearson Coefficient', fontproperties=font_tnr_reg)
+    plt.show()
+
+    fig3 = plt.figure()
+    plt.plot(score_train_df['score-cos'].values, 'g*', markersize=2)
+    plt.plot(score_test_df['score-cos'].values, 'm*', markersize=2)
+    plt.xticks(fontproperties=font_tnr_reg)
+    plt.yticks(fontproperties=font_tnr_reg)
+    plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
+    plt.ylabel('Cosine similarity', fontproperties=font_tnr_reg)
+    plt.show()
+
+    # save training data in the log file
+    loss_df.to_csv('1-loss-process.txt', sep='\t', index=False)
+    score_train_df.to_csv('1-score-train-process.txt', sep='\t', index=False)
+    score_test_df.to_csv('1-score-test-process.txt', sep='\t', index=False)
+    torch.save(feat_max, '2-feat-max.pth')
+    torch.save(feat_min, '2-feat-min.pth')
+    torch.save(label_max, '2-label-max.pth')
+    torch.save(label_min, '2-label-min.pth')
+# ----------------------------------------------------------------------------------------------------------------------
+# define state loading and prediction function of Net_Model
+if run_type == 4:
     Net_Model.model_load_predict(pred_data_dir, pred_result_dir)
 # ----------------------------------------------------------------------------------------------------------------------
 # define the random parameter generation module and Monte-Carlo prediction
-if run_type == 4:
+if run_type == 5:
     if dis_type == 1 or dis_type == 2:
         Net_Model.random_para_predict(pred_result_dir, mean_var, std_var, coeff_var, mcs_times, dis_type)
 # ----------------------------------------------------------------------------------------------------------------------
