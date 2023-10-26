@@ -40,8 +40,8 @@ else:  # windows platform
     pred_result_dir = r'.\\predict\\result.csv'
 # ----------------------------------------------------------------------------------------------------------------------
 # define the number of data in training file and testing file
-train_data_num = 25
-test_data_num = 5
+train_data_num = 45
+test_data_num = 45
 slice_num = 2  # define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
@@ -63,11 +63,11 @@ optim_type = 3
 loss_type = 1
 # ----------------------------------------------------------------------------------------------------------------------
 # define the batch size
-batch_size = 4
+batch_size = 15
 # define the learning rate
-learn_r = 0.001
+learn_r = 0.005
 # define the training cycle
-train_loop = 1000
+train_loop = 200
 # ----------------------------------------------------------------------------------------------------------------------
 # define the mean, standard deviation and correlation coefficient for run-type == 4
 mean_var = [20, 10]
@@ -145,7 +145,7 @@ if run_type == 2:
     plt.xticks(fontproperties=font_tnr_reg)
     plt.yticks(fontproperties=font_tnr_reg)
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
-    plt.ylabel('Cosine similarity', fontproperties=font_tnr_reg)
+    plt.ylabel('R^2 Score', fontproperties=font_tnr_reg)
     plt.show()
 
     # save training data in the log file
@@ -201,7 +201,7 @@ if run_type == 3:
     plt.xticks(fontproperties=font_tnr_reg)
     plt.yticks(fontproperties=font_tnr_reg)
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
-    plt.ylabel('Cosine similarity', fontproperties=font_tnr_reg)
+    plt.ylabel('R^2 Score', fontproperties=font_tnr_reg)
     plt.show()
 
     # save training data in the log file

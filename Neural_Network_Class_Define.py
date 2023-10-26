@@ -151,7 +151,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         print(criterion)
         # error function
         Accuracy_Fun_1 = tm.PearsonCorrCoef()
-        Accuracy_Fun_2 = tm.CosineSimilarity()
+        Accuracy_Fun_2 = tm.R2Score()
         # define the array for the loss function and similarity score
         loss_holder = []
         simu_score_train = []
@@ -243,7 +243,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         print(criterion)
         # error function
         Accuracy_Fun_1 = tm.PearsonCorrCoef()
-        Accuracy_Fun_2 = tm.CosineSimilarity()
+        Accuracy_Fun_2 = tm.R2Score()
         # define the array for the loss function and similarity score
         loss_holder = []
         simu_score_train = []
