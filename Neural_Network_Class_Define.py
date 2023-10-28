@@ -44,7 +44,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         return out
 
     # define the training process
-    def training_process(self, learn_r, bat_size, train_loop, optim_type, loss_type, data_dir, slice_num):
+    def training_process(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type, data_dir, slice_num):
         # load data and label from file
         data_numpy = np.loadtxt(data_dir, dtype=np.float32, delimiter=',', skiprows=0)
         data_tensor = torch.from_numpy(data_numpy)
@@ -61,13 +61,13 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
 
         # define the optimizer
         if optim_type == 1:  # using the Stochastic Gradient Descent method
-            optimizer = torch.optim.SGD(self.parameters(), learn_r)
+            optimizer = torch.optim.SGD(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 2:  # using the Adam method
-            optimizer = torch.optim.Adam(self.parameters(), learn_r)
+            optimizer = torch.optim.Adam(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 3:  # using the RMSprop method
-            optimizer = torch.optim.RMSprop(self.parameters(), learn_r)
+            optimizer = torch.optim.RMSprop(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 4:  # using the Adagrad method
-            optimizer = torch.optim.Adagrad(self.parameters(), learn_r)
+            optimizer = torch.optim.Adagrad(self.parameters(), learn_r, weight_decay=weight_d)
         print(optimizer)
         # define the loss function
         if loss_type == 1:
@@ -96,19 +96,19 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 # update parameters
                 optimizer.step()
                 # log the loss value
-                if batch_idx % bat_size == 0:
+                if batch_idx % len(data) == 0:
                     step += 1
-                    loss_holder.append([step, loss.detach().numpy() / bat_size])
+                    loss_holder.append([step, loss.detach().numpy()])
 
-                if batch_idx % bat_size == 0 and loss < loss_value:
+                if batch_idx % len(data) == 0 and loss < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
                     loss_value = loss
 
         return loss_holder
 
     # define the training and testing process
-    def training_testing_process(self, learn_r, bat_size, train_loop, optim_type, loss_type, train_num, test_num,
-                                 train_data_dir, test_data_dir, slice_num):
+    def training_testing_process(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type, train_num,
+                                 test_num, train_data_dir, test_data_dir, slice_num):
         # load data and label from training file and testing file
         train_data_numpy = np.loadtxt(train_data_dir, dtype=np.float32, delimiter=',', skiprows=0)
         train_data_tensor = torch.from_numpy(train_data_numpy)
@@ -133,13 +133,13 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
 
         # define the optimizer
         if optim_type == 1:  # using the Stochastic Gradient Descent method
-            optimizer = torch.optim.SGD(self.parameters(), learn_r)
+            optimizer = torch.optim.SGD(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 2:  # using the Adam method
-            optimizer = torch.optim.Adam(self.parameters(), learn_r)
+            optimizer = torch.optim.Adam(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 3:  # using the RMSprop method
-            optimizer = torch.optim.RMSprop(self.parameters(), learn_r)
+            optimizer = torch.optim.RMSprop(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 4:  # using the Adagrad method
-            optimizer = torch.optim.Adagrad(self.parameters(), learn_r)
+            optimizer = torch.optim.Adagrad(self.parameters(), learn_r, weight_decay=weight_d)
         print(optimizer)
         # define the loss function
         if loss_type == 1:
@@ -158,7 +158,6 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         simu_score_test = []
         # set the loss as infinity: loss_value < pre_loss_value, save model
         loss_value = np.inf
-        step = 0
         # loading the training data
         for t_id in range(train_loop):
             train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=bat_size, shuffle=True)
@@ -172,14 +171,6 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 loss.backward()
                 # update parameters
                 optimizer.step()
-                # log the loss value
-                if batch_idx_1 % bat_size == 0:
-                    step += 1
-                    loss_holder.append([step, loss.detach().numpy() / bat_size])
-
-                if batch_idx_1 % bat_size == 0 and loss < loss_value:
-                    torch.save(self.state_dict(), '0-model.pt')
-                    loss_value = loss
 
             # calculating the similarity score for the training data
             train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=train_num, shuffle=False)
@@ -188,6 +179,11 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 output_2 = torch.squeeze(self.forward(data_2))
                 score_train_per = Accuracy_Fun_1(label_2, output_2)
                 score_train_cos = Accuracy_Fun_2(label_2, output_2)
+                loss = criterion(output_2, label_2)
+                loss_holder.append([t_id, loss.detach().numpy()])
+                if loss < loss_value:
+                    torch.save(self.state_dict(), '0-model.pt')
+                    loss_value = loss
                 simu_score_train.append([t_id, score_train_per.detach().numpy(), score_train_cos.detach().numpy()])
 
             # calculating the similarity score for the testing data
@@ -202,8 +198,8 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         return loss_holder, simu_score_train, simu_score_test, feat_max, feat_min, label_max, label_min
 
     # define the incremental train process
-    def training_testing_incremental(self, learn_r, bat_size, train_loop, optim_type, loss_type, train_num, test_num,
-                                     train_data_dir, test_data_dir, slice_num, feat_max, feat_min, label_max,
+    def training_testing_incremental(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type, train_num,
+                                     test_num, train_data_dir, test_data_dir, slice_num, feat_max, feat_min, label_max,
                                      label_min):
         # load data and label from training file and testing file
         train_data_numpy = np.loadtxt(train_data_dir, dtype=np.float32, delimiter=',', skiprows=0)
@@ -225,13 +221,13 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
 
         # define the optimizer
         if optim_type == 1:  # using the Stochastic Gradient Descent method
-            optimizer = torch.optim.SGD(self.parameters(), learn_r)
+            optimizer = torch.optim.SGD(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 2:  # using the Adam method
-            optimizer = torch.optim.Adam(self.parameters(), learn_r)
+            optimizer = torch.optim.Adam(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 3:  # using the RMSprop method
-            optimizer = torch.optim.RMSprop(self.parameters(), learn_r)
+            optimizer = torch.optim.RMSprop(self.parameters(), learn_r, weight_decay=weight_d)
         elif optim_type == 4:  # using the Adagrad method
-            optimizer = torch.optim.Adagrad(self.parameters(), learn_r)
+            optimizer = torch.optim.Adagrad(self.parameters(), learn_r, weight_decay=weight_d)
         print(optimizer)
         # define the loss function
         if loss_type == 1:
@@ -250,7 +246,6 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         simu_score_test = []
         # set the loss as infinity: loss_value < pre_loss_value, save model
         loss_value = np.inf
-        step = 0
         # loading the training data
         for t_id in range(train_loop):
             train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=bat_size, shuffle=True)
@@ -264,14 +259,6 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 loss.backward()
                 # update parameters
                 optimizer.step()
-                # log the loss value
-                if batch_idx_1 % bat_size == 0:
-                    step += 1
-                    loss_holder.append([step, loss.detach().numpy() / bat_size])
-
-                if batch_idx_1 % bat_size == 0 and loss < loss_value:
-                    torch.save(self.state_dict(), '0-model.pt')
-                    loss_value = loss
 
             # calculating the similarity score for the training data
             train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=train_num, shuffle=False)
@@ -280,6 +267,11 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 output_2 = torch.squeeze(self.forward(data_2))
                 score_train_per = Accuracy_Fun_1(label_2, output_2)
                 score_train_cos = Accuracy_Fun_2(label_2, output_2)
+                loss = criterion(output_2, label_2)
+                loss_holder.append([t_id, loss.detach().numpy()])
+                if loss < loss_value:
+                    torch.save(self.state_dict(), '0-model.pt')
+                    loss_value = loss
                 simu_score_train.append([t_id, score_train_per.detach().numpy(), score_train_cos.detach().numpy()])
 
             # calculating the similarity score for the testing data

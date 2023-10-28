@@ -49,7 +49,7 @@ slice_num = 2  # define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # define the sizes of input vector, hidden vector and output vector
 input_size = slice_num
-hidden_size = 10
+hidden_size = 15
 output_size = 1
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
@@ -63,11 +63,13 @@ optim_type = 3
 loss_type = 1
 # ----------------------------------------------------------------------------------------------------------------------
 # define the batch size
-batch_size = 15
+batch_size = 5
 # define the learning rate
-learn_r = 0.005
+learn_r = 0.003
+# define the weight_decay
+weight_d = 0.001
 # define the training cycle
-train_loop = 200
+train_loop = 50
 # ----------------------------------------------------------------------------------------------------------------------
 # define the mean, standard deviation and correlation coefficient for run-type == 4
 mean_var = [20, 10]
@@ -91,7 +93,8 @@ if run_type == 1:
         if isinstance(layer, nn.Linear):
             init.xavier_uniform_(layer.weight)
 
-    loss_holder = Net_Model.training_process(learn_r, batch_size, train_loop, optim_type, loss_type, train_data_dir,
+    loss_holder = Net_Model.training_process(learn_r, weight_d, batch_size, train_loop, optim_type, loss_type,
+                                             train_data_dir,
                                              slice_num)
     # plot the relationship between loss_value and iteration step
     fig = plt.figure()
@@ -112,7 +115,7 @@ if run_type == 2:
             init.xavier_uniform_(layer.weight)
 
     loss_holder, simu_score_train, simu_score_test, feat_max, feat_min, label_max, label_min = \
-        Net_Model.training_testing_process(learn_r, batch_size, train_loop,
+        Net_Model.training_testing_process(learn_r, weight_d, batch_size, train_loop,
                                            optim_type, loss_type,
                                            train_data_num, test_data_num,
                                            train_data_dir, test_data_dir,
@@ -168,7 +171,7 @@ if run_type == 3:
     label_min = torch.load('2-label-min.pth')
     # incremental train process
     loss_holder, simu_score_train, simu_score_test = \
-        Net_Model.training_testing_incremental(learn_r, batch_size, train_loop,
+        Net_Model.training_testing_incremental(learn_r, weight_d, batch_size, train_loop,
                                                optim_type, loss_type,
                                                train_data_num, test_data_num,
                                                train_data_dir, test_data_dir,
