@@ -153,7 +153,8 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         Accuracy_Fun_1 = tm.PearsonCorrCoef()
         Accuracy_Fun_2 = tm.R2Score()
         # define the array for the loss function and similarity score
-        loss_holder = []
+        loss_holder_train = []
+        loss_holder_test = []
         simu_score_train = []
         simu_score_test = []
         # set the loss as infinity: loss_value < pre_loss_value, save model
@@ -180,7 +181,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 score_train_per = Accuracy_Fun_1(label_2, output_2)
                 score_train_cos = Accuracy_Fun_2(label_2, output_2)
                 loss = criterion(output_2, label_2)
-                loss_holder.append([t_id, loss.detach().numpy()])
+                loss_holder_train.append([t_id, loss.detach().numpy()])
                 if loss < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
                     loss_value = loss
@@ -191,11 +192,13 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))
+                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy()])
                 score_test_per = Accuracy_Fun_1(label_3, output_3)
                 score_test_cos = Accuracy_Fun_2(label_3, output_3)
                 simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])
 
-        return loss_holder, simu_score_train, simu_score_test, feat_max, feat_min, label_max, label_min
+        return loss_holder_train, loss_holder_test, simu_score_train, simu_score_test, feat_max, feat_min,\
+               label_max, label_min
 
     # define the incremental train process
     def training_testing_incremental(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type, train_num,
@@ -241,7 +244,8 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         Accuracy_Fun_1 = tm.PearsonCorrCoef()
         Accuracy_Fun_2 = tm.R2Score()
         # define the array for the loss function and similarity score
-        loss_holder = []
+        loss_holder_train = []
+        loss_holder_test = []
         simu_score_train = []
         simu_score_test = []
         # set the loss as infinity: loss_value < pre_loss_value, save model
@@ -268,7 +272,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 score_train_per = Accuracy_Fun_1(label_2, output_2)
                 score_train_cos = Accuracy_Fun_2(label_2, output_2)
                 loss = criterion(output_2, label_2)
-                loss_holder.append([t_id, loss.detach().numpy()])
+                loss_holder_train.append([t_id, loss.detach().numpy()])
                 if loss < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
                     loss_value = loss
@@ -279,11 +283,12 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))
+                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy()])
                 score_test_per = Accuracy_Fun_1(label_3, output_3)
                 score_test_cos = Accuracy_Fun_2(label_3, output_3)
                 simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])
 
-        return loss_holder, simu_score_train, simu_score_test
+        return loss_holder_train, loss_holder_test, simu_score_train, simu_score_test
 
     # define the process of loading model state and predict new data
     def model_load_predict(self, pred_data_dir, pred_result_dir):

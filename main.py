@@ -41,7 +41,7 @@ else:  # windows platform
 # ----------------------------------------------------------------------------------------------------------------------
 # define the number of data in training file and testing file
 train_data_num = 45
-test_data_num = 45
+test_data_num = 9
 slice_num = 2  # define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
@@ -49,13 +49,13 @@ slice_num = 2  # define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # define the sizes of input vector, hidden vector and output vector
 input_size = slice_num
-hidden_size = 15
+hidden_size = 22
 output_size = 1
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
 # the type of activation function: 1--sigmoid function; 2--ReLU function; 3--tanh function
 actifun_type1 = 2
-actifun_type2 = 1
+actifun_type2 = 2
 # ----------------------------------------------------------------------------------------------------------------------
 # the type of optimizer: 1--SGD; 2--Adam; 3--RMSprop; 4--Adagrad
 optim_type = 3
@@ -63,11 +63,11 @@ optim_type = 3
 loss_type = 1
 # ----------------------------------------------------------------------------------------------------------------------
 # define the batch size
-batch_size = 5
+batch_size = 3
 # define the learning rate
-learn_r = 0.003
+learn_r = 0.0012
 # define the weight_decay
-weight_d = 0.001
+weight_d = 0.002
 # define the training cycle
 train_loop = 50
 # ----------------------------------------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ if run_type == 2:
         if isinstance(layer, nn.Linear):
             init.xavier_uniform_(layer.weight)
 
-    loss_holder, simu_score_train, simu_score_test, feat_max, feat_min, label_max, label_min = \
+    loss_h1, loss_h2, simu_score_train, simu_score_test, feat_max, feat_min, label_max, label_min = \
         Net_Model.training_testing_process(learn_r, weight_d, batch_size, train_loop,
                                            optim_type, loss_type,
                                            train_data_num, test_data_num,
@@ -122,13 +122,16 @@ if run_type == 2:
                                            slice_num)
     # plot the relationship between loss_value and iteration step
     fig = plt.figure()
-    loss_df = pd.DataFrame(loss_holder, columns=['step', 'loss'])
-    plt.plot(loss_df['loss'].values, 'ro', markersize=2)
+    loss_df_1 = pd.DataFrame(loss_h1, columns=['step', 'loss'])
+    loss_df_2 = pd.DataFrame(loss_h2, columns=['step', 'loss'])
+    plt.plot(loss_df_1['loss'].values, 'go', markersize=2)
+    plt.plot(loss_df_2['loss'].values, 'mo', markersize=2)
     plt.xticks(fontproperties=font_tnr_reg)
     plt.yticks(fontproperties=font_tnr_reg)
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
     plt.ylabel('Loss', fontproperties=font_tnr_reg)
     plt.show()
+    
     # plot the relationship between loss_value and iteration step
     score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-cos'])
     score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-cos'])
@@ -152,7 +155,8 @@ if run_type == 2:
     plt.show()
 
     # save training data in the log file
-    loss_df.to_csv('1-loss-process.txt', sep='\t', index=False)
+    loss_df_1.to_csv('1-loss-process_train.txt', sep='\t', index=False)
+    loss_df_2.to_csv('1-loss-process_test.txt', sep='\t', index=False)
     score_train_df.to_csv('1-score-train-process.txt', sep='\t', index=False)
     score_test_df.to_csv('1-score-test-process.txt', sep='\t', index=False)
     torch.save(feat_max, '2-feat-max.pth')
@@ -170,7 +174,7 @@ if run_type == 3:
     label_max = torch.load('2-label-max.pth')
     label_min = torch.load('2-label-min.pth')
     # incremental train process
-    loss_holder, simu_score_train, simu_score_test = \
+    loss_h1, loss_h2, simu_score_train, simu_score_test = \
         Net_Model.training_testing_incremental(learn_r, weight_d, batch_size, train_loop,
                                                optim_type, loss_type,
                                                train_data_num, test_data_num,
@@ -178,13 +182,16 @@ if run_type == 3:
                                                slice_num, feat_max, feat_min, label_max, label_min)
     # plot the relationship between loss_value and iteration step
     fig = plt.figure()
-    loss_df = pd.DataFrame(loss_holder, columns=['step', 'loss'])
-    plt.plot(loss_df['loss'].values, 'ro', markersize=2)
+    loss_df_1 = pd.DataFrame(loss_h1, columns=['step', 'loss'])
+    loss_df_2 = pd.DataFrame(loss_h2, columns=['step', 'loss'])
+    plt.plot(loss_df_1['loss'].values, 'go', markersize=2)
+    plt.plot(loss_df_2['loss'].values, 'mo', markersize=2)
     plt.xticks(fontproperties=font_tnr_reg)
     plt.yticks(fontproperties=font_tnr_reg)
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
     plt.ylabel('Loss', fontproperties=font_tnr_reg)
     plt.show()
+    
     # plot the relationship between loss_value and iteration step
     score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-cos'])
     score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-cos'])
@@ -208,7 +215,8 @@ if run_type == 3:
     plt.show()
 
     # save training data in the log file
-    loss_df.to_csv('1-loss-process.txt', sep='\t', index=False)
+    loss_df_1.to_csv('1-loss-process_train.txt', sep='\t', index=False)
+    loss_df_2.to_csv('1-loss-process_test.txt', sep='\t', index=False)
     score_train_df.to_csv('1-score-train-process.txt', sep='\t', index=False)
     score_test_df.to_csv('1-score-test-process.txt', sep='\t', index=False)
     torch.save(feat_max, '2-feat-max.pth')
