@@ -107,8 +107,8 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         return loss_holder
 
     # define the training and testing process
-    def training_testing_process(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type, train_num,
-                                 test_num, train_data_dir, test_data_dir, slice_num):
+    def training_testing_process(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type, 
+                                 train_data_dir, test_data_dir, slice_num):
         # load data and label from training file and testing file
         train_data_numpy = np.loadtxt(train_data_dir, dtype=np.float32, delimiter=',', skiprows=0)
         train_data_tensor = torch.from_numpy(train_data_numpy)
@@ -174,21 +174,21 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 optimizer.step()
 
             # calculating the similarity score for the training data
-            train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=train_num, shuffle=False)
+            train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=len(train_dataset), shuffle=False)
             for batch_idx_2, (data_2, label_2) in enumerate(train_loader_all):
                 # the result of forward process
                 output_2 = torch.squeeze(self.forward(data_2))
                 score_train_per = Accuracy_Fun_1(label_2, output_2)
                 score_train_cos = Accuracy_Fun_2(label_2, output_2)
-                loss = criterion(output_2, label_2)
-                loss_holder_train.append([t_id, loss.detach().numpy()])
-                if loss < loss_value:
+                loss_1 = criterion(output_2, label_2)
+                loss_holder_train.append([t_id, loss_1.detach().numpy()])
+                if loss_1 < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
-                    loss_value = loss
+                    loss_value = loss_1
                 simu_score_train.append([t_id, score_train_per.detach().numpy(), score_train_cos.detach().numpy()])
 
             # calculating the similarity score for the testing data
-            test_loader_all = torch.utils.data.DataLoader(test_dataset, batch_size=test_num, shuffle=False)
+            test_loader_all = torch.utils.data.DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))
@@ -201,8 +201,8 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                label_max, label_min
 
     # define the incremental train process
-    def training_testing_incremental(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type, train_num,
-                                     test_num, train_data_dir, test_data_dir, slice_num, feat_max, feat_min, label_max,
+    def training_testing_incremental(self, learn_r, weight_d, bat_size, train_loop, optim_type, loss_type,
+                                     train_data_dir, test_data_dir, slice_num, feat_max, feat_min, label_max,
                                      label_min):
         # load data and label from training file and testing file
         train_data_numpy = np.loadtxt(train_data_dir, dtype=np.float32, delimiter=',', skiprows=0)
@@ -265,21 +265,21 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 optimizer.step()
 
             # calculating the similarity score for the training data
-            train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=train_num, shuffle=False)
+            train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=len(train_dataset), shuffle=False)
             for batch_idx_2, (data_2, label_2) in enumerate(train_loader_all):
                 # the result of forward process
                 output_2 = torch.squeeze(self.forward(data_2))
                 score_train_per = Accuracy_Fun_1(label_2, output_2)
                 score_train_cos = Accuracy_Fun_2(label_2, output_2)
-                loss = criterion(output_2, label_2)
-                loss_holder_train.append([t_id, loss.detach().numpy()])
-                if loss < loss_value:
+                loss_1 = criterion(output_2, label_2)
+                loss_holder_train.append([t_id, loss_1.detach().numpy()])
+                if loss_1 < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
-                    loss_value = loss
+                    loss_value = loss_1
                 simu_score_train.append([t_id, score_train_per.detach().numpy(), score_train_cos.detach().numpy()])
 
             # calculating the similarity score for the testing data
-            test_loader_all = torch.utils.data.DataLoader(test_dataset, batch_size=test_num, shuffle=False)
+            test_loader_all = torch.utils.data.DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))

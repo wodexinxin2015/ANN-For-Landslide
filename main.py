@@ -40,8 +40,6 @@ else:  # windows platform
     pred_result_dir = r'.\\predict\\result.csv'
 # ----------------------------------------------------------------------------------------------------------------------
 # define the number of data in training file and testing file
-train_data_num = 45
-test_data_num = 9
 slice_num = 2  # define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
@@ -117,7 +115,6 @@ if run_type == 2:
     loss_h1, loss_h2, simu_score_train, simu_score_test, feat_max, feat_min, label_max, label_min = \
         Net_Model.training_testing_process(learn_r, weight_d, batch_size, train_loop,
                                            optim_type, loss_type,
-                                           train_data_num, test_data_num,
                                            train_data_dir, test_data_dir,
                                            slice_num)
     # plot the relationship between loss_value and iteration step
@@ -177,7 +174,6 @@ if run_type == 3:
     loss_h1, loss_h2, simu_score_train, simu_score_test = \
         Net_Model.training_testing_incremental(learn_r, weight_d, batch_size, train_loop,
                                                optim_type, loss_type,
-                                               train_data_num, test_data_num,
                                                train_data_dir, test_data_dir,
                                                slice_num, feat_max, feat_min, label_max, label_min)
     # plot the relationship between loss_value and iteration step
