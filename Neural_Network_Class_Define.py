@@ -178,10 +178,10 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_2, (data_2, label_2) in enumerate(train_loader_all):
                 # the result of forward process
                 output_2 = torch.squeeze(self.forward(data_2))
-                score_train_per = Accuracy_Fun_1(label_2, output_2)
-                score_train_cos = Accuracy_Fun_2(label_2, output_2)
+                score_train_per = Accuracy_Fun_1(output_2, label_2)
+                score_train_cos = Accuracy_Fun_2(output_2, label_2)
                 loss_1 = criterion(output_2, label_2)
-                loss_holder_train.append([t_id, loss_1.detach().numpy()])
+                loss_holder_train.append([t_id, loss_1.detach().numpy() / len(train_dataset)])
                 if loss_1 < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
                     loss_value = loss_1
@@ -192,9 +192,9 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))
-                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy()])
-                score_test_per = Accuracy_Fun_1(label_3, output_3)
-                score_test_cos = Accuracy_Fun_2(label_3, output_3)
+                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy() / len(test_dataset)])
+                score_test_per = Accuracy_Fun_1(output_3, label_3)
+                score_test_cos = Accuracy_Fun_2(output_3, label_3)
                 simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])
 
         return loss_holder_train, loss_holder_test, simu_score_train, simu_score_test, feat_max, feat_min,\
@@ -269,10 +269,10 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_2, (data_2, label_2) in enumerate(train_loader_all):
                 # the result of forward process
                 output_2 = torch.squeeze(self.forward(data_2))
-                score_train_per = Accuracy_Fun_1(label_2, output_2)
-                score_train_cos = Accuracy_Fun_2(label_2, output_2)
+                score_train_per = Accuracy_Fun_1(output_2, label_2)
+                score_train_cos = Accuracy_Fun_2(output_2, label_2)
                 loss_1 = criterion(output_2, label_2)
-                loss_holder_train.append([t_id, loss_1.detach().numpy()])
+                loss_holder_train.append([t_id, loss_1.detach().numpy() / len(train_dataset)])
                 if loss_1 < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
                     loss_value = loss_1
@@ -283,9 +283,9 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))
-                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy()])
-                score_test_per = Accuracy_Fun_1(label_3, output_3)
-                score_test_cos = Accuracy_Fun_2(label_3, output_3)
+                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy() / len(test_dataset)])
+                score_test_per = Accuracy_Fun_1(output_3, label_3)
+                score_test_cos = Accuracy_Fun_2(output_3, label_3)
                 simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])
 
         return loss_holder_train, loss_holder_test, simu_score_train, simu_score_test

@@ -130,8 +130,8 @@ if run_type == 2:
     plt.show()
     
     # plot the relationship between loss_value and iteration step
-    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-cos'])
-    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-cos'])
+    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-r2'])
+    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-r2'])
 
     fig2 = plt.figure()
     plt.plot(score_train_df['score-per'].values, 'g*', markersize=2)
@@ -143,8 +143,8 @@ if run_type == 2:
     plt.show()
 
     fig3 = plt.figure()
-    plt.plot(score_train_df['score-cos'].values, 'g*', markersize=2)
-    plt.plot(score_test_df['score-cos'].values, 'm*', markersize=2)
+    plt.plot(score_train_df['score-r2'].values, 'g*', markersize=2)
+    plt.plot(score_test_df['score-r2'].values, 'm*', markersize=2)
     plt.xticks(fontproperties=font_tnr_reg)
     plt.yticks(fontproperties=font_tnr_reg)
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
@@ -189,8 +189,8 @@ if run_type == 3:
     plt.show()
     
     # plot the relationship between loss_value and iteration step
-    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-cos'])
-    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-cos'])
+    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-r2'])
+    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-r2'])
 
     fig2 = plt.figure()
     plt.plot(score_train_df['score-per'].values, 'g*', markersize=2)
@@ -202,8 +202,8 @@ if run_type == 3:
     plt.show()
 
     fig3 = plt.figure()
-    plt.plot(score_train_df['score-cos'].values, 'g*', markersize=2)
-    plt.plot(score_test_df['score-cos'].values, 'm*', markersize=2)
+    plt.plot(score_train_df['score-r2'].values, 'g*', markersize=2)
+    plt.plot(score_test_df['score-r2'].values, 'm*', markersize=2)
     plt.xticks(fontproperties=font_tnr_reg)
     plt.yticks(fontproperties=font_tnr_reg)
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
