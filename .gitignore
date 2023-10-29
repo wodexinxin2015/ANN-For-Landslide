@@ -1,6 +1,7 @@
 /predict/
 /test-data/
 /train-data/
+/.idea/
 /0-model.pt
 /1-loss-process.txt
 /1-score-test-process.txt
@@ -9,4 +10,3 @@
 /2-feat-min.pth
 /2-label-max.pth
 /2-label-min.pth
-/.idea
