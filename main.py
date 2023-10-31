@@ -47,7 +47,7 @@ slice_num = 2  # define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # define the sizes of input vector, hidden vector and output vector
 input_size = slice_num
-hidden_size = 22
+hidden_size = 9
 output_size = 1
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
@@ -61,13 +61,13 @@ optim_type = 3
 loss_type = 1
 # ----------------------------------------------------------------------------------------------------------------------
 # define the batch size
-batch_size = 3
+batch_size = 6
 # define the learning rate
-learn_r = 0.0012
+learn_r = 0.002
 # define the weight_decay
-weight_d = 0.002
+weight_d = 0.001
 # define the training cycle
-train_loop = 50
+train_loop = 100
 # ----------------------------------------------------------------------------------------------------------------------
 # define the mean, standard deviation and correlation coefficient for run-type == 4
 mean_var = [20, 10]

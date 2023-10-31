@@ -71,7 +71,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         print(optimizer)
         # define the loss function
         if loss_type == 1:
-            criterion = nn.MSELoss()  # mean squared error function
+            criterion = nn.MSELoss(reduction='mean')  # mean squared error function
         elif loss_type == 2:
             criterion = nn.CrossEntropyLoss()  # cross entropy error function
         elif loss_type == 3:
@@ -143,7 +143,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         print(optimizer)
         # define the loss function
         if loss_type == 1:
-            criterion = nn.MSELoss()  # mean squared error function
+            criterion = nn.MSELoss(reduction='mean')  # mean squared error function
         elif loss_type == 2:
             criterion = nn.CrossEntropyLoss()  # cross entropy error function
         elif loss_type == 3:
@@ -181,7 +181,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 score_train_per = Accuracy_Fun_1(output_2, label_2)
                 score_train_cos = Accuracy_Fun_2(output_2, label_2)
                 loss_1 = criterion(output_2, label_2)
-                loss_holder_train.append([t_id, loss_1.detach().numpy() / len(train_dataset)])
+                loss_holder_train.append([t_id, loss_1.detach().numpy()])
                 if loss_1 < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
                     loss_value = loss_1
@@ -192,7 +192,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))
-                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy() / len(test_dataset)])
+                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy()])
                 score_test_per = Accuracy_Fun_1(output_3, label_3)
                 score_test_cos = Accuracy_Fun_2(output_3, label_3)
                 simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])
@@ -234,7 +234,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
         print(optimizer)
         # define the loss function
         if loss_type == 1:
-            criterion = nn.MSELoss()  # mean squared error function
+            criterion = nn.MSELoss(reduction='mean')  # mean squared error function
         elif loss_type == 2:
             criterion = nn.CrossEntropyLoss()  # cross entropy error function
         elif loss_type == 3:
@@ -272,7 +272,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
                 score_train_per = Accuracy_Fun_1(output_2, label_2)
                 score_train_cos = Accuracy_Fun_2(output_2, label_2)
                 loss_1 = criterion(output_2, label_2)
-                loss_holder_train.append([t_id, loss_1.detach().numpy() / len(train_dataset)])
+                loss_holder_train.append([t_id, loss_1.detach().numpy()])
                 if loss_1 < loss_value:
                     torch.save(self.state_dict(), '0-model.pt')
                     loss_value = loss_1
@@ -283,7 +283,7 @@ class Neural_Network_Class(nn.Module):  # define the three-layer neural network
             for batch_idx_3, (data_3, label_3) in enumerate(test_loader_all):
                 # the result of forward process
                 output_3 = torch.squeeze(self.forward(data_3))
-                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy() / len(test_dataset)])
+                loss_holder_test.append([t_id, criterion(output_3, label_3).detach().numpy()])
                 score_test_per = Accuracy_Fun_1(output_3, label_3)
                 score_test_cos = Accuracy_Fun_2(output_3, label_3)
                 simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])

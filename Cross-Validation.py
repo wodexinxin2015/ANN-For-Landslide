@@ -18,13 +18,10 @@ class EarlyStopping:
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
-                            上次验证集损失值改善后等待几个epoch
                             Default: 7
             verbose (bool): If True, prints a message for each validation loss improvement.
-                            如果是True，为每个验证集损失值改善打印一条信息
                             Default: False
             delta (float): Minimum change in the monitored quantity to qualify as an improvement.
-                            监测数量的最小变化，以符合改进的要求
                             Default: 0
         """
         self.patience = patience
@@ -137,8 +134,8 @@ def k_fold(input_size_k, hidden_size_k, output_size_k, k_k, train_feat, train_la
         e_s_temp += e_stop
 
     print('\n', '#' * 10, 'Result of k-fold cross validation', '#' * 10)
-    print('average train loss:{:.4f}, average train accuracy:{:.3f}'.format(train_loss_sum / k_k, train_acc_sum / k_k))
-    print('average valid loss:{:.4f}, average valid accuracy:{:.3f}'.format(valid_loss_sum / k_k, valid_acc_sum / k_k))
+    print('average train loss:{:.3e}, average train accuracy:{:.3f}'.format(train_loss_sum / k_k, train_acc_sum / k_k))
+    print('average valid loss:{:.3e}, average valid accuracy:{:.3f}'.format(valid_loss_sum / k_k, valid_acc_sum / k_k))
     return train_loss_sum / k_k, valid_loss_sum / k_k, train_acc_sum / k_k, valid_acc_sum / k_k, e_s_temp / k_k
 
 
@@ -160,7 +157,7 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
         optimizer = torch.optim.Adagrad(net.parameters(), lr_rate_t, weight_decay=wd_t)
     # define the loss function
     if loss_type == 1:
-        criterion = nn.MSELoss()  # mean squared error function
+        criterion = nn.MSELoss(reduction='mean')  # mean squared error function
     elif loss_type == 2:
         criterion = nn.CrossEntropyLoss()  # cross entropy error function
     elif loss_type == 3:
@@ -182,7 +179,6 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
             loss.backward()
             # update parameters
             optimizer.step()
-        train_loss.append(loss.detach().numpy())
 
         # the accuracy of train set
         train_loader_1 = torch.utils.data.DataLoader(data_train, batch_size=len(data_train), shuffle=False)
@@ -191,6 +187,7 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
             # the result of forward process
             net.eval()
             output_1 = torch.squeeze(net.forward(data_1))
+            train_loss.append(criterion(output_1, label_1).detach().numpy())
             score_per += acc_fun(label_1, output_1)
         train_acc.append(score_per.detach().numpy() / len(train_loader_1))
 
@@ -222,10 +219,10 @@ k = 10
 epoch_num = 300
 # ----------------------------------------------------------------------------------------------------------------------
 # hyperparameters
-hidden_size_range = np.arange(5, 21, 5).tolist()
-lr_rate_range = np.arange(0.001, 0.02, 0.005).tolist()
-weight_decay_range = np.arange(0.001, 0.005, 0.002).tolist()
-bat_size_range = np.arange(3, 10, 2).tolist()
+hidden_size_range = np.arange(9, 12, 1).tolist()
+lr_rate_range = np.arange(0.001, 0.004, 0.001).tolist()
+weight_decay_range = np.arange(0.001, 0.002, 0.001).tolist()
+bat_size_range = np.arange(5, 8, 1).tolist()
 # ----------------------------------------------------------------------------------------------------------------------
 if os.sep == "/":  # linux platform
     train_data_dir = r'./train-data/train-data.csv'
@@ -265,43 +262,33 @@ for hidden_size in hidden_size_range:
                 t_loss_1, v_loss_1, t_acc_1, v_acc_1, e_s_1 = k_fold(input_size, hidden_size, output_size, k,
                                                                      train_features, train_labels, epoch_num, lr_rate,
                                                                      weight_decay, bat_size)
-                mean_acc_1 = (t_acc_1 + v_acc_1) * 0.5
                 t_loss_2, v_loss_2, t_acc_2, v_acc_2, e_s_2 = k_fold(input_size, hidden_size, output_size, k,
                                                                      train_features, train_labels, epoch_num, lr_rate,
                                                                      weight_decay, bat_size)
-                mean_acc_2 = (t_acc_2 + v_acc_2) * 0.5
-                if mean_acc_2 > mean_acc_1:
-                    mean_acc = mean_acc_2
-                    if mean_acc > mean_acc_pre:
-                        h_size = hidden_size
-                        lr = lr_rate
-                        w_d = weight_decay
-                        b_s = bat_size
-                        t_loss = t_loss_2
-                        v_loss = v_loss_2
-                        t_acc = t_acc_2
-                        v_acc = v_acc_2
-                        e_s = e_s_2
-                        mean_acc_pre = mean_acc
-                else:
-                    mean_acc = mean_acc_1
-                    if mean_acc > mean_acc_pre:
-                        h_size = hidden_size
-                        lr = lr_rate
-                        w_d = weight_decay
-                        b_s = bat_size
-                        t_loss = t_loss_1
-                        v_loss = v_loss_1
-                        t_acc = t_acc_1
-                        v_acc = v_acc_1
-                        e_s = e_s_1
-                        mean_acc_pre = mean_acc
+                t_loss_3, v_loss_3, t_acc_3, v_acc_3, e_s_3 = k_fold(input_size, hidden_size, output_size, k,
+                                                                     train_features, train_labels, epoch_num, lr_rate,
+                                                                     weight_decay, bat_size)
+                t_loss_4, v_loss_4, t_acc_4, v_acc_4, e_s_4 = k_fold(input_size, hidden_size, output_size, k,
+                                                                     train_features, train_labels, epoch_num, lr_rate,
+                                                                     weight_decay, bat_size)                                                                    
+                mean_acc = (v_acc_1 + v_acc_2 + v_acc_3 + v_acc_4 ) * 0.25
+                if mean_acc > mean_acc_pre:
+                    h_size = hidden_size
+                    lr = lr_rate
+                    w_d = weight_decay
+                    b_s = bat_size
+                    t_loss = (t_loss_2 + t_loss_2 + t_loss_3 + t_loss_4) * 0.25
+                    v_loss = (v_loss_2 + v_loss_2 + v_loss_3 + v_loss_4) * 0.25
+                    t_acc = (t_acc_1 + t_acc_2 + t_acc_3 + t_acc_4) * 0.25
+                    v_acc = mean_acc
+                    e_s = e_s_2
+                    mean_acc_pre = mean_acc
 
 # print the result
 print("----------------------------------------")
 print("The best set of hyperparameters:")
 print('hidden_size:{:2d}, learn_rate:{:.4f}, weight_decay:{:.4f}, bat_size:{:2d}'.format(h_size, lr, w_d, b_s))
 print('early stopping epoch:{:.1f}'.format(e_s))
-print('average train loss:{:.4f}, average train accuracy:{:.3f}'.format(t_loss, t_acc))
-print('average valid loss:{:.4f}, average valid accuracy:{:.3f}'.format(v_loss, v_acc))
+print('average train loss:{:.3e}, average train accuracy:{:.3f}'.format(t_loss, t_acc))
+print('average valid loss:{:.3e}, average valid accuracy:{:.3f}'.format(v_loss, v_acc))
 # ----------------------------------------------------------------------------------------------------------------------
