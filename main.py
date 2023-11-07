@@ -40,7 +40,7 @@ else:  # windows platform
     pred_result_dir = r'.\\predict\\result.csv'
 # ----------------------------------------------------------------------------------------------------------------------
 # define the number of data in training file and testing file
-slice_num = 2  # define the number of features
+slice_num = 1  # define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
 #    (input_size, hidden_size)            (hidden_size, hidden_size)             (hidden_size, output_size)
@@ -48,7 +48,7 @@ slice_num = 2  # define the number of features
 # define the sizes of input vector, hidden vector and output vector
 input_size = slice_num
 hidden_size = 9
-output_size = 1
+output_size = 3
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
 # the type of activation function: 1--sigmoid function; 2--ReLU function; 3--tanh function
@@ -116,7 +116,7 @@ if run_type == 2:
         Net_Model.training_testing_process(learn_r, weight_d, batch_size, train_loop,
                                            optim_type, loss_type,
                                            train_data_dir, test_data_dir,
-                                           slice_num)
+                                           slice_num, output_size)
     # plot the relationship between loss_value and iteration step
     fig = plt.figure()
     loss_df_1 = pd.DataFrame(loss_h1, columns=['step', 'loss'])
@@ -128,30 +128,10 @@ if run_type == 2:
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
     plt.ylabel('Loss', fontproperties=font_tnr_reg)
     plt.show()
-    
-    # plot the relationship between loss_value and iteration step
-    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-r2'])
-    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-r2'])
-
-    fig2 = plt.figure()
-    plt.plot(score_train_df['score-per'].values, 'g*', markersize=2)
-    plt.plot(score_test_df['score-per'].values, 'm*', markersize=2)
-    plt.xticks(fontproperties=font_tnr_reg)
-    plt.yticks(fontproperties=font_tnr_reg)
-    plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
-    plt.ylabel('Pearson Coefficient', fontproperties=font_tnr_reg)
-    plt.show()
-
-    fig3 = plt.figure()
-    plt.plot(score_train_df['score-r2'].values, 'g*', markersize=2)
-    plt.plot(score_test_df['score-r2'].values, 'm*', markersize=2)
-    plt.xticks(fontproperties=font_tnr_reg)
-    plt.yticks(fontproperties=font_tnr_reg)
-    plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
-    plt.ylabel('R^2 Score', fontproperties=font_tnr_reg)
-    plt.show()
 
     # save training data in the log file
+    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-r2'])
+    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-r2'])
     loss_df_1.to_csv('1-loss-process_train.txt', sep='\t', index=False)
     loss_df_2.to_csv('1-loss-process_test.txt', sep='\t', index=False)
     score_train_df.to_csv('1-score-train-process.txt', sep='\t', index=False)
@@ -175,7 +155,7 @@ if run_type == 3:
         Net_Model.training_testing_incremental(learn_r, weight_d, batch_size, train_loop,
                                                optim_type, loss_type,
                                                train_data_dir, test_data_dir,
-                                               slice_num, feat_max, feat_min, label_max, label_min)
+                                               slice_num, feat_max, feat_min, label_max, label_min, output_size)
     # plot the relationship between loss_value and iteration step
     fig = plt.figure()
     loss_df_1 = pd.DataFrame(loss_h1, columns=['step', 'loss'])
@@ -187,30 +167,10 @@ if run_type == 3:
     plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
     plt.ylabel('Loss', fontproperties=font_tnr_reg)
     plt.show()
-    
-    # plot the relationship between loss_value and iteration step
-    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-r2'])
-    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-r2'])
-
-    fig2 = plt.figure()
-    plt.plot(score_train_df['score-per'].values, 'g*', markersize=2)
-    plt.plot(score_test_df['score-per'].values, 'm*', markersize=2)
-    plt.xticks(fontproperties=font_tnr_reg)
-    plt.yticks(fontproperties=font_tnr_reg)
-    plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
-    plt.ylabel('Pearson Coefficient', fontproperties=font_tnr_reg)
-    plt.show()
-
-    fig3 = plt.figure()
-    plt.plot(score_train_df['score-r2'].values, 'g*', markersize=2)
-    plt.plot(score_test_df['score-r2'].values, 'm*', markersize=2)
-    plt.xticks(fontproperties=font_tnr_reg)
-    plt.yticks(fontproperties=font_tnr_reg)
-    plt.xlabel('Iteration step', fontproperties=font_tnr_reg)
-    plt.ylabel('R^2 Score', fontproperties=font_tnr_reg)
-    plt.show()
 
     # save training data in the log file
+    score_train_df = pd.DataFrame(simu_score_train, columns=['step', 'score-per', 'score-r2'])
+    score_test_df = pd.DataFrame(simu_score_test, columns=['step', 'score-per', 'score-r2'])
     loss_df_1.to_csv('1-loss-process_train.txt', sep='\t', index=False)
     loss_df_2.to_csv('1-loss-process_test.txt', sep='\t', index=False)
     score_train_df.to_csv('1-score-train-process.txt', sep='\t', index=False)

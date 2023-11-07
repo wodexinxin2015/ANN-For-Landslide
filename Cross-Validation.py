@@ -126,7 +126,7 @@ def k_fold(input_size_k, hidden_size_k, output_size_k, k_k, train_feat, train_la
         net = Neural_Network_Class(input_size_k, hidden_size_k, output_size_k)
         # train the network
         train_loss, valid_loss, train_acc, valid_acc, e_stop = train_process \
-            (net, data_train, data_valid, num_epoch_k, lr_rate_k, weight_d_k, bat_size_k)
+            (net, data_train, data_valid, num_epoch_k, lr_rate_k, weight_d_k, bat_size_k, output_size_k)
         train_loss_sum += train_loss[-1]
         valid_loss_sum += valid_loss[-1]
         train_acc_sum += train_acc[-1]
@@ -134,13 +134,13 @@ def k_fold(input_size_k, hidden_size_k, output_size_k, k_k, train_feat, train_la
         e_s_temp += e_stop
 
     print('\n', '#' * 10, 'Result of k-fold cross validation', '#' * 10)
-    print('average train loss:{:.3e}, average train accuracy:{:.3f}'.format(train_loss_sum / k_k, train_acc_sum / k_k))
-    print('average valid loss:{:.3e}, average valid accuracy:{:.3f}'.format(valid_loss_sum / k_k, valid_acc_sum / k_k))
+    print('average train loss:{:.4f}, average train accuracy:{}'.format(train_loss_sum / k_k, train_acc_sum / k_k))
+    print('average valid loss:{:.4f}, average valid accuracy:{}'.format(valid_loss_sum / k_k, valid_acc_sum / k_k))
     return train_loss_sum / k_k, valid_loss_sum / k_k, train_acc_sum / k_k, valid_acc_sum / k_k, e_s_temp / k_k
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_size_t):
+def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_size_t, output_size_t):
     train_acc, valid_acc = [], []
     train_loss, valid_loss = [], []
 
@@ -164,14 +164,14 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
         criterion = nn.PoissonNLLLoss()  # PoissonNLLLoss function
     # define the early stopping function
     early_stopper = EarlyStopping(10)
-    acc_fun = tm.R2Score()
+    acc_fun = tm.R2Score(num_outputs=output_size_t, multioutput='raw_values')
 
     train_loader = torch.utils.data.DataLoader(data_train, batch_size=bat_size_t, shuffle=True)
     for epoch in range(num_epochs):
         # train process with mini-batch training
         for batch_idx, (data, label) in enumerate(train_loader):
             # the result of forward process
-            output = torch.squeeze(net.forward(data))
+            output = net.forward(data)
             # loss value
             loss = criterion(output, label)
             # back propagation: all the gradients are zero before back propagation.
@@ -182,24 +182,30 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
 
         # the accuracy of train set
         train_loader_1 = torch.utils.data.DataLoader(data_train, batch_size=len(data_train), shuffle=False)
-        score_per = 0
+        score_per = torch.zeros(output_size_t).reshape([1, output_size_t])
         for batch_idx_1, (data_1, label_1) in enumerate(train_loader_1):
             # the result of forward process
             net.eval()
-            output_1 = torch.squeeze(net.forward(data_1))
+            output_1 = net.forward(data_1)
             train_loss.append(criterion(output_1, label_1).detach().numpy())
-            score_per += acc_fun(label_1, output_1)
+            if output_size_t == 1:
+                score_per += acc_fun(torch.squeeze(label_1), torch.squeeze(output_1))
+            else:
+                score_per += acc_fun(label_1, output_1)
         train_acc.append(score_per.detach().numpy() / len(train_loader_1))
 
         # the accuracy of valid set
         valid_loader = torch.utils.data.DataLoader(data_valid, batch_size=len(data_valid), shuffle=False)
-        score_per = 0
+        score_per = torch.zeros(output_size_t).reshape([1, output_size_t])
         for batch_idx_2, (data_2, label_2) in enumerate(valid_loader):
             # the result of forward process
             net.eval()
-            output_2 = torch.squeeze(net.forward(data_2))
+            output_2 = net.forward(data_2)
             valid_loss.append(criterion(output_2, label_2).detach().numpy())
-            score_per += acc_fun(label_2, output_2)
+            if output_size_t == 1:
+                score_per += acc_fun(torch.squeeze(label_2), torch.squeeze(output_2))
+            else:
+                score_per += acc_fun(label_2, output_2)
         valid_acc.append(score_per.detach().numpy() / len(valid_loader))
         stop = epoch
 
@@ -219,25 +225,20 @@ k = 10
 epoch_num = 300
 # ----------------------------------------------------------------------------------------------------------------------
 # hyperparameters
-hidden_size_range = np.arange(9, 12, 1).tolist()
-lr_rate_range = np.arange(0.001, 0.004, 0.001).tolist()
-weight_decay_range = np.arange(0.001, 0.002, 0.001).tolist()
-bat_size_range = np.arange(5, 8, 1).tolist()
+hidden_size_range = np.arange(3, 13, 1).tolist()
+lr_rate_range = np.arange(0.001, 0.014, 0.001).tolist()
+weight_decay_range = np.arange(0.001, 0.003, 0.001).tolist()
+bat_size_range = np.arange(4, 8, 1).tolist()
 # ----------------------------------------------------------------------------------------------------------------------
 if os.sep == "/":  # linux platform
     train_data_dir = r'./train-data/train-data.csv'
 else:  # windows platform
     train_data_dir = r'.\\train-data\\train-data.csv'
-# testing data file path
-if os.sep == "/":  # linux platform
-    test_data_dir = r'./test-data/test-data.csv'
-else:  # windows platform
-    test_data_dir = r'.\\test-data\\test-data.csv'
 # load data and label from training file and testing file
 train_data_numpy = np.loadtxt(train_data_dir, dtype=np.float32, delimiter=',', skiprows=0)
 train_data_tensor = torch.from_numpy(train_data_numpy)
 train_features_o = train_data_tensor[:, :slice_num]
-train_labels_o = train_data_tensor[:, slice_num]
+train_labels_o = train_data_tensor[:, slice_num:]
 # normalization
 feat_max, _ = torch.max(train_features_o, dim=0)
 feat_min, _ = torch.min(train_features_o, dim=0)
@@ -272,7 +273,7 @@ for hidden_size in hidden_size_range:
                                                                      train_features, train_labels, epoch_num, lr_rate,
                                                                      weight_decay, bat_size)                                                                    
                 mean_acc = (v_acc_1 + v_acc_2 + v_acc_3 + v_acc_4 ) * 0.25
-                if mean_acc > mean_acc_pre:
+                if np.mean(mean_acc) > np.mean(mean_acc_pre):
                     h_size = hidden_size
                     lr = lr_rate
                     w_d = weight_decay
@@ -289,6 +290,6 @@ print("----------------------------------------")
 print("The best set of hyperparameters:")
 print('hidden_size:{:2d}, learn_rate:{:.4f}, weight_decay:{:.4f}, bat_size:{:2d}'.format(h_size, lr, w_d, b_s))
 print('early stopping epoch:{:.1f}'.format(e_s))
-print('average train loss:{:.3e}, average train accuracy:{:.3f}'.format(t_loss, t_acc))
-print('average valid loss:{:.3e}, average valid accuracy:{:.3f}'.format(v_loss, v_acc))
+print('average train loss:{:.4f}, average train accuracy:{}'.format(t_loss, t_acc))
+print('average valid loss:{:.4f}, average valid accuracy:{}'.format(v_loss, v_acc))
 # ----------------------------------------------------------------------------------------------------------------------
