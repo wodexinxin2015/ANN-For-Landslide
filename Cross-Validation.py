@@ -217,9 +217,9 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-input_size = 2
-output_size = 1
-slice_num = 2
+input_size = 1
+output_size = 3
+slice_num = input_size
 # ----------------------------------------------------------------------------------------------------------------------
 k = 10
 epoch_num = 300

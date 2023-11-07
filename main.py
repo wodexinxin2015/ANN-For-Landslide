@@ -39,16 +39,15 @@ if os.sep == "/":  # linux platform
 else:  # windows platform
     pred_result_dir = r'.\\predict\\result.csv'
 # ----------------------------------------------------------------------------------------------------------------------
-# define the number of data in training file and testing file
-slice_num = 1  # define the number of features
-# ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
 #    (input_size, hidden_size)            (hidden_size, hidden_size)             (hidden_size, output_size)
 # ----------------------------------------------------------------------------------------------------------------------
 # define the sizes of input vector, hidden vector and output vector
-input_size = slice_num
+input_size = 1
 hidden_size = 9
 output_size = 3
+slice_num = input_size
+# define the number of features
 # ----------------------------------------------------------------------------------------------------------------------
 # Input --> Linear 1 --> Activation function 1 --> Linear 2 --> Activation function 2 --> Linear 3 --> Output
 # the type of activation function: 1--sigmoid function; 2--ReLU function; 3--tanh function
