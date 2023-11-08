@@ -19,7 +19,7 @@ from Neural_Network_Predict import random_para_predict
 # main program
 # define the running type: 2--train and test; 3--load model state and conduct incremental train;
 # 4--load model state and predict new data; 5--automatically generate the random parameters and perform the prediction.
-run_type = 2
+run_type = 5
 # ----------------------------------------------------------------------------------------------------------------------
 # define the file path
 # training data file path
@@ -70,7 +70,7 @@ learn_r = 0.002
 # define the weight_decay
 weight_d = 0.001
 # define the training cycle
-train_loop = 100
+train_loop = 60
 # ----------------------------------------------------------------------------------------------------------------------
 # define the mean, standard deviation and correlation coefficient for run-type == 4
 mean_var = [20, 10]
@@ -82,20 +82,26 @@ dis_type = 2  # 1--normal distribution; 2--log normal distribution
 # setting font
 font_tnr_reg = plt_fm.FontProperties('Times New Roman', size=14, stretch=0)
 # ----------------------------------------------------------------------------------------------------------------------
-# set the model instance
-Net_Model = Neural_Network_Class(input_size, hidden_size, output_size, actifun_type1, actifun_type2)
-print(Net_Model)
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
 # ----------------------------------------------------------------------------------------------------------------------
 # define training and testing function of Net_Model
 # testing the model with test data
 if run_type == 2:
     # initializing the weight parameters
+    # set the model instance
+    net = Neural_Network_Class(input_size, hidden_size, output_size, actifun_type1, actifun_type2)
+    print(net)
+    Net_Model = net.to(device)
+    # initialization
     for layer in Net_Model.modules():
         if isinstance(layer, nn.Linear):
             init.xavier_uniform_(layer.weight)
 
     loss_h1, loss_h2, simu_score_train, simu_score_test, feat_max, feat_min, label_max, label_min = \
-        training_testing_process(Net_Model, learn_r, weight_d, batch_size, train_loop,
+        training_testing_process(Net_Model, device, learn_r, weight_d, batch_size, train_loop,
                                  optim_type, loss_type,
                                  train_data_dir, test_data_dir,
                                  slice_num, output_size)
@@ -127,14 +133,18 @@ if run_type == 2:
 # testing the model with test data
 if run_type == 3:
     # load the model state and the boundaries of features and labels: max, min.
-    Net_Model.load_state_dict(torch.load('0-model.pt'))
+    net = Neural_Network_Class(input_size, hidden_size, output_size, actifun_type1, actifun_type2)
+    print(net)
+    net.load_state_dict(torch.load('0-model.pt'))
+    Net_Model = net.to(device)
+    # data boundary load
     feat_max = torch.load('2-feat-max.pth')
     feat_min = torch.load('2-feat-min.pth')
     label_max = torch.load('2-label-max.pth')
     label_min = torch.load('2-label-min.pth')
     # incremental train process
     loss_h1, loss_h2, simu_score_train, simu_score_test = \
-        training_testing_incremental(Net_Model, learn_r, weight_d, batch_size, train_loop,
+        training_testing_incremental(Net_Model, device, learn_r, weight_d, batch_size, train_loop,
                                      optim_type, loss_type,
                                      train_data_dir, test_data_dir,
                                      slice_num, feat_max, feat_min, label_max, label_min, output_size)
@@ -164,10 +174,33 @@ if run_type == 3:
 # ----------------------------------------------------------------------------------------------------------------------
 # define state loading and prediction function of Net_Model
 if run_type == 4:
-    model_load_predict(Net_Model, pred_data_dir, pred_result_dir)
+    # load the model state and the boundaries of features and labels: max, min.
+    net = Neural_Network_Class(input_size, hidden_size, output_size, actifun_type1, actifun_type2)
+    print(net)
+    net.load_state_dict(torch.load('0-model.pt'))
+    Net_Model = net.to(device)
+    # data boundary load
+    feat_max = torch.load('2-feat-max.pth')
+    feat_min = torch.load('2-feat-min.pth')
+    label_max = torch.load('2-label-max.pth')
+    label_min = torch.load('2-label-min.pth')
+    # read data and predict
+    model_load_predict(Net_Model, device, feat_max, feat_min, label_max, label_min, pred_data_dir, pred_result_dir)
 # ----------------------------------------------------------------------------------------------------------------------
 # define the random parameter generation module and Monte-Carlo prediction
 if run_type == 5:
+    # load the model state and the boundaries of features and labels: max, min.
+    net = Neural_Network_Class(input_size, hidden_size, output_size, actifun_type1, actifun_type2)
+    print(net)
+    net.load_state_dict(torch.load('0-model.pt'))
+    Net_Model = net.to(device)
+    # data boundary load
+    feat_max = torch.load('2-feat-max.pth')
+    feat_min = torch.load('2-feat-min.pth')
+    label_max = torch.load('2-label-max.pth')
+    label_min = torch.load('2-label-min.pth')
+    # generate random data and predict
     if dis_type == 1 or dis_type == 2:
-        random_para_predict(Net_Model, pred_result_dir, mean_var, std_var, coeff_var, mcs_times, dis_type)
+        random_para_predict(Net_Model, device, feat_max, feat_min, label_max, label_min, pred_result_dir, mean_var,
+                            std_var, coeff_var, mcs_times, dis_type)
 # ----------------------------------------------------------------------------------------------------------------------

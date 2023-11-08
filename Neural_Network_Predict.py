@@ -10,38 +10,27 @@ import scipy as sp
 
 # ----------------------------------------------------------------------------------------------------------------------
 # define the process of loading model state and predict new data
-def model_load_predict(net, pred_data_dir, pred_result_dir):
-    # loading the model parameters
-    net.load_state_dict(torch.load('0-model.pt'))
-    feat_max = torch.load('2-feat-max.pth')
-    feat_min = torch.load('2-feat-min.pth')
-    label_max = torch.load('2-label-max.pth')
-    label_min = torch.load('2-label-min.pth')
+def model_load_predict(net, device_t, feat_max, feat_min, label_max, label_min, pred_data_dir, pred_result_dir):
     # load data from predicting file
     pred_data_numpy = np.loadtxt(pred_data_dir, dtype=np.float32, delimiter=',', skiprows=0)
     pred_data_tensor_o = torch.from_numpy(pred_data_numpy)
     pred_data_tensor = (pred_data_tensor_o - feat_min) / (feat_max - feat_min)
     # forward process
     if pred_data_tensor.ndim == 1:
-        pred_result = net.forward(torch.unsqueeze(pred_data_tensor, dim=1))
-        pred_result = pred_result * (label_max - label_min) + label_min
+        pred_result_gpu = net.forward(torch.unsqueeze(pred_data_tensor, dim=1).to(device_t))
+        pred_result = pred_result_gpu.cpu() * (label_max - label_min) + label_min
         pred_tensor = torch.cat([torch.unsqueeze(pred_data_tensor_o, dim=1), pred_result], 1)
     else:
-        pred_result = net.forward(pred_data_tensor)
-        pred_result = pred_result * (label_max - label_min) + label_min
+        pred_result_gpu = net.forward(pred_data_tensor.to(device_t))
+        pred_result = pred_result_gpu.cpu() * (label_max - label_min) + label_min
         pred_tensor = torch.cat([pred_data_tensor_o, pred_result], 1)
     np.savetxt(pred_result_dir, pred_tensor.detach().numpy(), fmt='%.6f', delimiter=',')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # define the process of loading model state and predict new data
-def random_para_predict(net, pred_result_dir, mean_var, std_var, coeff_var, mcs_times, dis_type):
-    # loading the model parameters
-    net.load_state_dict(torch.load('0-model.pt'))
-    feat_max = torch.load('2-feat-max.pth')
-    feat_min = torch.load('2-feat-min.pth')
-    label_max = torch.load('2-label-max.pth')
-    label_min = torch.load('2-label-min.pth')
+def random_para_predict(net, device_t, feat_max, feat_min, label_max, label_min, pred_result_dir, mean_var, std_var, coeff_var,
+                        mcs_times, dis_type):
     # generate random parameters
     if dis_type == 2:  # log normal distribution
         temp_mean = np.array(mean_var)
@@ -66,15 +55,15 @@ def random_para_predict(net, pred_result_dir, mean_var, std_var, coeff_var, mcs_
         pred_data_numpy = mean_var_1 + std_var_1 * pred_data_numpy
 
     pred_data_tensor_o = torch.from_numpy(pred_data_numpy.T)
-    pred_data_tensor = (pred_data_tensor_o - feat_min) / (feat_max - feat_min)
+    pred_data_tensor = ((pred_data_tensor_o - feat_min) / (feat_max - feat_min)).float()
     # forward process
     if pred_data_tensor.ndim == 1:
-        pred_result = net.forward(torch.unsqueeze(pred_data_tensor.to(torch.float32), dim=1))
-        pred_result = pred_result * (label_max - label_min) + label_min
+        pred_result_gpu = net.forward(torch.unsqueeze(pred_data_tensor, dim=1).to(device_t))
+        pred_result = pred_result_gpu.cpu() * (label_max - label_min) + label_min
         pred_tensor = torch.cat([torch.unsqueeze(pred_data_tensor_o, dim=1), pred_result], 1)
     else:
-        pred_result = net.forward(pred_data_tensor.to(torch.float32))
-        pred_result = pred_result * (label_max - label_min) + label_min
+        pred_result_gpu = net.forward(pred_data_tensor.to(device_t))
+        pred_result = pred_result_gpu.cpu() * (label_max - label_min) + label_min
         pred_tensor = torch.cat([pred_data_tensor_o, pred_result], 1)
     np.savetxt(pred_result_dir, pred_tensor.detach().numpy(), fmt='%.6f', delimiter=',')
 

@@ -113,8 +113,8 @@ def get_k_fold_data(k, i, train_feat, train_label):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def k_fold(input_size_k, hidden_size_k, output_size_k, k_k, train_feat, train_label, num_epoch_k, lr_rate_k, weight_d_k,
-           bat_size_k):
+def k_fold(device_t, input_size_k, hidden_size_k, output_size_k, k_k, train_feat, train_label, num_epoch_k, lr_rate_k,
+           weight_d_k, bat_size_k, optim_type_1, loss_type_1):
     train_loss_sum, valid_loss_sum = 0, 0
     train_acc_sum, valid_acc_sum = 0, 0
     e_s_temp = 0
@@ -123,10 +123,11 @@ def k_fold(input_size_k, hidden_size_k, output_size_k, k_k, train_feat, train_la
         feat_train, feat_valid, label_train, label_valid = get_k_fold_data(k_k, i, train_feat, train_label)
         data_train = torch.utils.data.TensorDataset(feat_train, label_train)
         data_valid = torch.utils.data.TensorDataset(feat_valid, label_valid)
-        net = Neural_Network_Class(input_size_k, hidden_size_k, output_size_k)
+        net = Neural_Network_Class(input_size_k, hidden_size_k, output_size_k).to(device_t)
         # train the network
         train_loss, valid_loss, train_acc, valid_acc, e_stop = train_process \
-            (net, data_train, data_valid, num_epoch_k, lr_rate_k, weight_d_k, bat_size_k, output_size_k)
+            (net, device_t, data_train, data_valid, num_epoch_k, lr_rate_k, weight_d_k, bat_size_k, output_size_k,
+             optim_type_1, loss_type_1)
         train_loss_sum += train_loss[-1]
         valid_loss_sum += valid_loss[-1]
         train_acc_sum += train_acc[-1]
@@ -140,36 +141,37 @@ def k_fold(input_size_k, hidden_size_k, output_size_k, k_k, train_feat, train_la
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_size_t, output_size_t):
+def train_process(net, device_t, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_size_t, output_size_t,
+                  optim_type_1, loss_type_1):
     train_acc, valid_acc = [], []
     train_loss, valid_loss = [], []
 
-    optim_type = 3
-    loss_type = 1
     # define the optimizer
-    if optim_type == 1:  # using the Stochastic Gradient Descent method
+    if optim_type_1 == 1:  # using the Stochastic Gradient Descent method
         optimizer = torch.optim.SGD(net.parameters(), lr_rate_t, weight_decay=wd_t)
-    elif optim_type == 2:  # using the Adam method
+    elif optim_type_1 == 2:  # using the Adam method
         optimizer = torch.optim.Adam(net.parameters(), lr_rate_t, weight_decay=wd_t)
-    elif optim_type == 3:  # using the RMSprop method
+    elif optim_type_1 == 3:  # using the RMSprop method
         optimizer = torch.optim.RMSprop(net.parameters(), lr_rate_t, weight_decay=wd_t)
-    elif optim_type == 4:  # using the Adagrad method
+    elif optim_type_1 == 4:  # using the Adagrad method
         optimizer = torch.optim.Adagrad(net.parameters(), lr_rate_t, weight_decay=wd_t)
     # define the loss function
-    if loss_type == 1:
-        criterion = nn.MSELoss(reduction='mean')  # mean squared error function
-    elif loss_type == 2:
-        criterion = nn.CrossEntropyLoss()  # cross entropy error function
-    elif loss_type == 3:
-        criterion = nn.PoissonNLLLoss()  # PoissonNLLLoss function
+    if loss_type_1 == 1:
+        criterion = nn.MSELoss(reduction='mean').to(device_t)  # mean squared error function
+    elif loss_type_1 == 2:
+        criterion = nn.CrossEntropyLoss().to(device_t)  # cross entropy error function
+    elif loss_type_1 == 3:
+        criterion = nn.PoissonNLLLoss().to(device_t)  # PoissonNLLLoss function
     # define the early stopping function
     early_stopper = EarlyStopping(10)
-    acc_fun = tm.R2Score(num_outputs=output_size_t, multioutput='raw_values')
+    acc_fun = tm.R2Score(num_outputs=output_size_t, multioutput='raw_values').to(device_t)
 
     train_loader = torch.utils.data.DataLoader(data_train, batch_size=bat_size_t, shuffle=True)
     for epoch in range(num_epochs):
         # train process with mini-batch training
         for batch_idx, (data, label) in enumerate(train_loader):
+            # to device
+            data, label = data.to(device_t), label.to(device_t)
             # the result of forward process
             output = net.forward(data)
             # loss value
@@ -185,13 +187,13 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
         score_per = torch.zeros(output_size_t).reshape([1, output_size_t])
         for batch_idx_1, (data_1, label_1) in enumerate(train_loader_1):
             # the result of forward process
-            net.eval()
+            data_1, label_1 = data_1.to(device_t), label_1.to(device_t)
             output_1 = net.forward(data_1)
-            train_loss.append(criterion(output_1, label_1).detach().numpy())
+            train_loss.append(criterion(output_1, label_1).cpu().detach().numpy())
             if output_size_t == 1:
-                score_per += acc_fun(torch.squeeze(label_1), torch.squeeze(output_1))
+                score_per += acc_fun(torch.squeeze(label_1), torch.squeeze(output_1)).cpu()
             else:
-                score_per += acc_fun(label_1, output_1)
+                score_per += acc_fun(label_1, output_1).cpu()
         train_acc.append(score_per.detach().numpy() / len(train_loader_1))
 
         # the accuracy of valid set
@@ -199,13 +201,13 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
         score_per = torch.zeros(output_size_t).reshape([1, output_size_t])
         for batch_idx_2, (data_2, label_2) in enumerate(valid_loader):
             # the result of forward process
-            net.eval()
+            data_2, label_2 = data_2.to(device_t), label_2.to(device_t)
             output_2 = net.forward(data_2)
-            valid_loss.append(criterion(output_2, label_2).detach().numpy())
+            valid_loss.append(criterion(output_2, label_2).cpu().detach().numpy())
             if output_size_t == 1:
-                score_per += acc_fun(torch.squeeze(label_2), torch.squeeze(output_2))
+                score_per += acc_fun(torch.squeeze(label_2), torch.squeeze(output_2)).cpu()
             else:
-                score_per += acc_fun(label_2, output_2)
+                score_per += acc_fun(label_2, output_2).cpu()
         valid_acc.append(score_per.detach().numpy() / len(valid_loader))
         stop = epoch
 
@@ -217,18 +219,27 @@ def train_process(net, data_train, data_valid, num_epochs, lr_rate_t, wd_t, bat_
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-input_size = 1
-output_size = 3
+input_size = 2
+output_size = 1
 slice_num = input_size
 # ----------------------------------------------------------------------------------------------------------------------
 k = 10
 epoch_num = 300
 # ----------------------------------------------------------------------------------------------------------------------
 # hyperparameters
-hidden_size_range = np.arange(3, 13, 1).tolist()
-lr_rate_range = np.arange(0.001, 0.014, 0.001).tolist()
-weight_decay_range = np.arange(0.001, 0.003, 0.001).tolist()
-bat_size_range = np.arange(4, 8, 1).tolist()
+hidden_size_range = np.arange(9, 10, 1).tolist()
+lr_rate_range = np.arange(0.002, 0.003, 0.001).tolist()
+weight_decay_range = np.arange(0.001, 0.002, 0.001).tolist()
+bat_size_range = np.arange(5, 7, 1).tolist()
+# ----------------------------------------------------------------------------------------------------------------------
+# optimization type and loss function type
+optim_type_t = 3
+loss_type_t = 1
+# ----------------------------------------------------------------------------------------------------------------------
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
 # ----------------------------------------------------------------------------------------------------------------------
 if os.sep == "/":  # linux platform
     train_data_dir = r'./train-data/train-data.csv'
@@ -260,19 +271,19 @@ for hidden_size in hidden_size_range:
                                                                                                        weight_decay,
                                                                                                        bat_size))
                 print("----------------------------------------")
-                t_loss_1, v_loss_1, t_acc_1, v_acc_1, e_s_1 = k_fold(input_size, hidden_size, output_size, k,
+                t_loss_1, v_loss_1, t_acc_1, v_acc_1, e_s_1 = k_fold(device, input_size, hidden_size, output_size, k,
                                                                      train_features, train_labels, epoch_num, lr_rate,
-                                                                     weight_decay, bat_size)
-                t_loss_2, v_loss_2, t_acc_2, v_acc_2, e_s_2 = k_fold(input_size, hidden_size, output_size, k,
+                                                                     weight_decay, bat_size, optim_type_t, loss_type_t)
+                t_loss_2, v_loss_2, t_acc_2, v_acc_2, e_s_2 = k_fold(device, input_size, hidden_size, output_size, k,
                                                                      train_features, train_labels, epoch_num, lr_rate,
-                                                                     weight_decay, bat_size)
-                t_loss_3, v_loss_3, t_acc_3, v_acc_3, e_s_3 = k_fold(input_size, hidden_size, output_size, k,
+                                                                     weight_decay, bat_size, optim_type_t, loss_type_t)
+                t_loss_3, v_loss_3, t_acc_3, v_acc_3, e_s_3 = k_fold(device, input_size, hidden_size, output_size, k,
                                                                      train_features, train_labels, epoch_num, lr_rate,
-                                                                     weight_decay, bat_size)
-                t_loss_4, v_loss_4, t_acc_4, v_acc_4, e_s_4 = k_fold(input_size, hidden_size, output_size, k,
+                                                                     weight_decay, bat_size, optim_type_t, loss_type_t)
+                t_loss_4, v_loss_4, t_acc_4, v_acc_4, e_s_4 = k_fold(device, input_size, hidden_size, output_size, k,
                                                                      train_features, train_labels, epoch_num, lr_rate,
-                                                                     weight_decay, bat_size)                                                                    
-                mean_acc = (v_acc_1 + v_acc_2 + v_acc_3 + v_acc_4 ) * 0.25
+                                                                     weight_decay, bat_size, optim_type_t, loss_type_t)
+                mean_acc = (v_acc_1 + v_acc_2 + v_acc_3 + v_acc_4) * 0.25
                 if np.mean(mean_acc) > np.mean(mean_acc_pre):
                     h_size = hidden_size
                     lr = lr_rate
