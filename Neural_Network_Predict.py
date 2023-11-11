@@ -25,6 +25,10 @@ def model_load_predict(net, device_t, feat_max, feat_min, label_max, label_min, 
         pred_result = pred_result_gpu.cpu() * (label_max - label_min) + label_min
         pred_tensor = torch.cat([pred_data_tensor_o, pred_result], 1)
     np.savetxt(pred_result_dir, pred_tensor.detach().numpy(), fmt='%.6f', delimiter=',')
+    # delete the tensor object and clean the cache
+    if device_t == torch.device("cuda"):
+        del pred_result_gpu
+        torch.cuda.empty_cache()  # clean the cache
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -66,6 +70,10 @@ def random_para_predict(net, device_t, feat_max, feat_min, label_max, label_min,
         pred_result = pred_result_gpu.cpu() * (label_max - label_min) + label_min
         pred_tensor = torch.cat([pred_data_tensor_o, pred_result], 1)
     np.savetxt(pred_result_dir, pred_tensor.detach().numpy(), fmt='%.6f', delimiter=',')
+    # delete the tensor object and clean the cache
+    if device_t == torch.device("cuda"):
+        del pred_result_gpu
+        torch.cuda.empty_cache()  # clean the cache
 
 
 # ----------------------------------------------------------------------------------------------------------------------

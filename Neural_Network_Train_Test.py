@@ -78,6 +78,10 @@ def training_testing_process(net, device_t, learn_r, weight_d, bat_size, train_l
             loss.backward()
             # update parameters
             optimizer.step()
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_1, label_1, output_1
+                torch.cuda.empty_cache()  # clean the cache
 
         # calculating the similarity score for the training data
         train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=len(train_dataset), shuffle=False)
@@ -97,6 +101,10 @@ def training_testing_process(net, device_t, learn_r, weight_d, bat_size, train_l
                 torch.save(net.state_dict(), '0-model.pt')
                 loss_value = loss_1
             simu_score_train.append([t_id, score_train_per.detach().numpy(), score_train_cos.detach().numpy()])
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_2, label_2, output_2
+                torch.cuda.empty_cache()  # clean the cache
 
         # calculating the similarity score for the testing data
         test_loader_all = torch.utils.data.DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
@@ -112,6 +120,10 @@ def training_testing_process(net, device_t, learn_r, weight_d, bat_size, train_l
                 score_test_per = Accuracy_Fun_1(output_3, label_3).cpu()
                 score_test_cos = Accuracy_Fun_2(output_3, label_3).cpu()
             simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_3, label_3, output_3
+                torch.cuda.empty_cache()  # clean the cache
 
     return loss_holder_train, loss_holder_test, simu_score_train, simu_score_test, feat_max, feat_min, \
            label_max, label_min
@@ -182,6 +194,10 @@ def training_testing_incremental(net, device_t, learn_r, weight_d, bat_size, tra
             loss.backward()
             # update parameters
             optimizer.step()
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_1, label_1, output_1
+                torch.cuda.empty_cache()  # clean the cache
 
         # calculating the similarity score for the training data
         train_loader_all = torch.utils.data.DataLoader(train_dataset, batch_size=len(train_dataset), shuffle=False)
@@ -201,6 +217,10 @@ def training_testing_incremental(net, device_t, learn_r, weight_d, bat_size, tra
                 torch.save(net.state_dict(), '0-model.pt')
                 loss_value = loss_1
             simu_score_train.append([t_id, score_train_per.detach().numpy(), score_train_cos.detach().numpy()])
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_2, label_2, output_2
+                torch.cuda.empty_cache()  # clean the cache
 
         # calculating the similarity score for the testing data
         test_loader_all = torch.utils.data.DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
@@ -216,6 +236,10 @@ def training_testing_incremental(net, device_t, learn_r, weight_d, bat_size, tra
                 score_test_per = Accuracy_Fun_1(output_3, label_3).cpu()
                 score_test_cos = Accuracy_Fun_2(output_3, label_3).cpu()
             simu_score_test.append([t_id, score_test_per.detach().numpy(), score_test_cos.detach().numpy()])
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_3, label_3, output_3
+                torch.cuda.empty_cache()  # clean the cache
 
     return loss_holder_train, loss_holder_test, simu_score_train, simu_score_test
 

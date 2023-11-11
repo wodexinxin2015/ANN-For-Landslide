@@ -125,6 +125,8 @@ def k_fold(device_t, input_size_k, hidden_size_k, output_size_k, k_k, train_feat
         data_valid = torch.utils.data.TensorDataset(feat_valid, label_valid)
         net = Neural_Network_Class(input_size_k, hidden_size_k, output_size_k).to(device_t)
         # train the network
+        if device_t == torch.device("cuda"):
+            torch.cuda.empty_cache()   # clean the cache
         train_loss, valid_loss, train_acc, valid_acc, e_stop = train_process \
             (net, device_t, data_train, data_valid, num_epoch_k, lr_rate_k, weight_d_k, bat_size_k, output_size_k,
              optim_type_1, loss_type_1)
@@ -181,6 +183,10 @@ def train_process(net, device_t, data_train, data_valid, num_epochs, lr_rate_t, 
             loss.backward()
             # update parameters
             optimizer.step()
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data, label, output
+                torch.cuda.empty_cache()  # clean the cache
 
         # the accuracy of train set
         train_loader_1 = torch.utils.data.DataLoader(data_train, batch_size=len(data_train), shuffle=False)
@@ -194,6 +200,10 @@ def train_process(net, device_t, data_train, data_valid, num_epochs, lr_rate_t, 
                 score_per += acc_fun(torch.squeeze(label_1), torch.squeeze(output_1)).cpu()
             else:
                 score_per += acc_fun(label_1, output_1).cpu()
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_1, label_1, output_1
+                torch.cuda.empty_cache()  # clean the cache
         train_acc.append(score_per.detach().numpy() / len(train_loader_1))
 
         # the accuracy of valid set
@@ -208,6 +218,10 @@ def train_process(net, device_t, data_train, data_valid, num_epochs, lr_rate_t, 
                 score_per += acc_fun(torch.squeeze(label_2), torch.squeeze(output_2)).cpu()
             else:
                 score_per += acc_fun(label_2, output_2).cpu()
+            # delete the tensor object and clean the cache
+            if device_t == torch.device("cuda"):
+                del data_2, label_2, output_2
+                torch.cuda.empty_cache()  # clean the cache
         valid_acc.append(score_per.detach().numpy() / len(valid_loader))
         stop = epoch
 
